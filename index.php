@@ -12,6 +12,13 @@
 </head>
 
 <?php
+	if (!is_dir('tmp/')) {
+		mkdir('tmp');
+	}
+	if (!is_dir('results/')) {
+		mkdir('results');
+	}
+
 	if (isset($_POST['submit']) && $_POST['submit'] == 'Submit') {
 		$fileTmpPath = $_FILES['upload']['tmp_name'];
 		$fileName = $_FILES['upload']['name'];
@@ -22,6 +29,7 @@
 
 		$newFileName = md5(time() . $fileName) . '.' . $fileExtension;
 		$uploadFileDir = './tmp/';
+
 		$dest_path = $uploadFileDir . $newFileName;
 		if(move_uploaded_file($fileTmpPath, $dest_path)) {
 		  $message ='File is successfully uploaded. Checking for columns.';

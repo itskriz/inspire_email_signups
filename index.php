@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>Inspire 305 Voting Marketing Signup Tool</title>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	<style type="text/css">
@@ -18,7 +19,6 @@
 	if (!is_dir('results/')) {
 		mkdir('results');
 	}
-
 	if (isset($_POST['submit']) && $_POST['submit'] == 'Submit') {
 		$fileTmpPath = $_FILES['upload']['tmp_name'];
 		$fileName = $_FILES['upload']['name'];
@@ -37,9 +37,7 @@
 		else {
 		  $message = 'There was some error moving the file to upload directory.';
 		}
-
 		$filename = 'tmp/' . $newFileName;
-
 		$file_array = []; 
 		if (($h = fopen("{$filename}", "r")) !== FALSE) {
 		  while (($data = fgetcsv($h, 1000, "|")) !== FALSE) {
@@ -51,13 +49,16 @@
 		for ($i = 0; $i < count($csv_headers); $i++) {
 			$csv_headers[$i] = strtolower(str_replace(array('"', ' (required)'), '', preg_replace('/[\x00-\x1F\x7F]/', '', $csv_headers[$i])));
 		}
-
 		if (isset($_POST['fromDate'])) {
 			$fdate = strtotime($_POST['fromDate']);
 		} else {
-			$fdate = date();
+			$fdate = strtotime('2019-05-01');
 		}
-
+		if (isset($_POST['toDate'])) {
+			$tdate = strtotime($_POST['toDate'] . '+ 1 days');
+		} else {
+			$tdate = strtotime('2019-05-16');
+		}
 		$mkt_optin = null;
 		$fname = null;
 		$lname = null;
@@ -82,15 +83,14 @@
 				$stime = $i;
 			}
 		}
-
-		if (null !== $mkt_optin && null !== $fname && null !== $lname && null !== $email && null !== $fdate) {
+		if (null !== $mkt_optin && null !== $fname && null !== $lname && null !== $email && null !== $fdate && null !== $tdate) {
 			$message = 'Columns found. Scanning for optins.';
 			$emailDups = array();
 			$email_optins = array();
 			for ($i = 0; $i < count($file_array); $i++) {
 				$row = $file_array[$i];
 				$submitTime = strtotime(str_replace('"', '', preg_replace('/[\x00-\x1F\x7F]/', '', $row[$stime])));
-				if ('array' == strtolower(preg_replace('/[\x00-\x1F\x7F]/', '', $row[$mkt_optin])) && $submitTime >= $fdate) {
+				if ('array' == strtolower(preg_replace('/[\x00-\x1F\x7F]/', '', $row[$mkt_optin])) && ($submitTime >= $fdate && $submitTime <= $tdate)) {
 					$newRow = array(
 						trim(str_replace('"', '', preg_replace('/[\x00-\x1F\x7F]/', '', $row[$fname]))),
 						trim(str_replace('"', '', preg_replace('/[\x00-\x1F\x7F]/', '', $row[$lname]))),
@@ -125,8 +125,6 @@
 		$message = 'Please upload your spreadsheet.';
 	}
 ?>
-
-
 <body>
 	<main class="container mt-4 mb-4">
 		<header>
@@ -160,7 +158,7 @@
 		?>
 		<form action="/inspire_email_signups/index.php" method="post" style="" enctype="multipart/form-data">
 			<div class="row">
-				<div class="col-sm-8">
+				<div class="col">
 					<fieldset class="form-group">
 						<label for="upload">
 							Upload document:
@@ -170,14 +168,26 @@
 						<small class="form-text text-muted">Only pipe-delimited "|" .csv files accepted.</small>
 					</fieldset>
 				</div>
-				<div class="col-sm-4">
+			</div>
+			<div class="row">
+				<div class="col-sm-6">
 					<fieldset class="form-group">
 						<label for="fromDate">
-							Starting Date
+							Starting date
 							<span class="text-danger">*</span>
 						</label>
 						<input class="form-control" type="text" name="fromDate" placeholder="YYYY-MM-DD" required>
-						<small class="form-text text-muted">Please enter dates as Year, Month, Day like YYYY-MM-DD.</small>
+						<small class="form-text text-muted">Please enter dates as Year, Month, Day <br>ex: YYYY-MM-DD</small>
+					</fieldset>
+				</div>
+				<div class="col-sm-6">
+					<fieldset class="form-group">
+						<label for="toDate">
+							Up to date
+							<span class="text-danger">*</span>
+						</label>
+						<input class="form-control" type="text" name="toDate" placeholder="YYYY-MM-DD" required>
+						<small class="form-text text-muted">Please enter dates as Year, Month, Day <br>ex: YYYY-MM-DD</small>
 					</fieldset>
 				</div>
 			</div>
